@@ -58,7 +58,8 @@ def new_topic(request):
 @login_required
 def new_entry(request, topic_id):
     """Добавляет новую запись по конкретной теме."""
-    topic = Topic.objects.get(id=topic_id)
+    topic = get_object_or_404(Topic, id=topic_id)
+    check_topic_owner(topic, request)
     if request.method != 'POST':
         #Данные не отправлялись; создается пустая форма.
         form = EntryForm()
@@ -66,7 +67,6 @@ def new_entry(request, topic_id):
         #Отправленные данные POST; обработать данные
         form = EntryForm(data=request.POST)
         if form.is_valid():
-            check_topic_owner(topic, request)
             new_entry = form.save(commit=False)
             new_entry.topic = topic
             new_entry.save()
@@ -80,9 +80,9 @@ def new_entry(request, topic_id):
 @login_required
 def edit_entry(request, entry_id):
     """Редактирует существующую запись"""
-    entry = Entry.objects.get(id=entry_id)
+    entry = get_object_or_404(Entry, id=entry_id)
     topic = entry.topic
-
+    check_topic_owner(topic, request)
     if request.method != 'POST':
         #Исходный запрос; форма заполняется данными текущей записи
         form = EntryForm(instance=entry)
